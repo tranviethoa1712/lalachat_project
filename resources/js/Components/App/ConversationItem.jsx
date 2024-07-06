@@ -8,7 +8,6 @@ const ConversationItem = ({
     online = null,
     selectedConversation = null
 }) => {
-    console.log("conversation item");
     const page = usePage();
     const currentUser = page.props.auth.user;
     let classes = " border-transparent";

@@ -18,10 +18,6 @@ const ChatLayout = ({ children }) => {
     // Check online users
     const isUserOnline = (userId) => onlineUsers[userId];
 
-    // console.log("conversations", conversations)
-    // console.log("selectedConversation", selectedConversation)
-    // console.log("sortedConversations", sortedConversations)
-
     const onSearch  = (ev) => {
         const search = ev.target.value.toLowerCase();
         setLocalConversations(
@@ -95,7 +91,6 @@ const ChatLayout = ({ children }) => {
                 Echo.leave("online"); // user logout event
             };
     }, []);
-    console.log("sortedConversations", sortedConversations)
 
     return (
         <>

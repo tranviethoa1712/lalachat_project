@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Events\SocketMessage;
 use App\Http\Requests\StoreMessageRequest;
+use App\Http\Resources\MessageAttachmentResource;
 use App\Http\Resources\MessageResource;
+use App\Http\Resources\UserResource;
 use App\Models\Conversation;
 use App\Models\Group;
 use App\Models\Message;
@@ -21,13 +23,19 @@ class MessageController extends Controller
         $messages = Message::where('sender_id', auth()->id())
         ->where('receiver_id', $user->id)
         ->orWhere('sender_id', $user->id)
-        ->where('receiver_id', auth()->id)
+        ->where('receiver_id', auth()->id())
         ->latest()
         ->paginate(10);
 
-        return inertia('Home', [
+        $messages->transform(function ($message) {
+            $message->sender = new UserResource($message->sender);
+            $message->attachments = new MessageAttachmentResource($message->attachments);
+            return $message;
+        });
+        
+        return inertia('Home', [    
             'selectedConversation' => $user->toConversationArray(),
-            'messages' => MessageResource::collection($messages)
+            'messages' => $messages 
         ]);
     }
 

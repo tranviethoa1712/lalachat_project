@@ -5,7 +5,6 @@ import Markdown from "react-markdown";
 
 const MessageItem = ({ message }) => {
     const currentUser = usePage().props.auth.user;
-    console.log('sender', message.sender)
 
     return (
         <div
@@ -32,7 +31,7 @@ const MessageItem = ({ message }) => {
                 className={
                     "chat-bubble relative " + 
                     (message.sender_id === currentUser.id
-                        ? " chat-bubble-info"
+                        ? " chat-bubble-accent"
                         : ""
                     ) 
                 }

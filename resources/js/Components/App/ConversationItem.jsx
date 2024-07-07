@@ -18,7 +18,7 @@ const ConversationItem = ({
             !conversation.is_group &&
             selectedConversation.id == conversation.id
         ) {
-            classes = "border-blue-500 bg-black/20"; 
+            classes = "border-blue-500 bg-neutral text-neutral-content"; 
         }
 
         if(
@@ -26,7 +26,7 @@ const ConversationItem = ({
             conversation.is_group &&
             selectedConversation.id == conversation.id
         ) {
-            classes = "border-blue-500 bg-black/20"; 
+            classes = "border-blue-500 bg-neutral text-neutral-content"; 
         }
     }
     
@@ -38,8 +38,8 @@ const ConversationItem = ({
             }
             preserveState // The way preserveState works is by preserving the state of an existing page component when navigating to the same page
             className={
-                `conversation-item flex items-center gap-2 p-2 text-gray-300 transition-all
-                cursor-pointer border-l-4 hover:bg-black/30` + 
+                `conversation-item flex items-center gap-2 p-2 transition-all
+                cursor-pointer border-l-4 hover:bg-neutral hover:text-neutral-content` + 
                 classes +
                 (conversation.is_user && currentUser.is_admin
                     ? " pr-2"

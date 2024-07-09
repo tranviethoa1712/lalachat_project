@@ -31,8 +31,8 @@ const MessageItem = ({ message }) => {
                 className={
                     "chat-bubble relative " + 
                     (message.sender_id === currentUser.id
-                        ? " chat-bubble-accent"
-                        : ""
+                        ? " bg-base-200 text-gray-800"
+                        : "bg-amber-900"
                     ) 
                 }
             >

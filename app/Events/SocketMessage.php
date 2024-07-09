@@ -22,7 +22,7 @@ class SocketMessage implements ShouldBroadcastNow
      */
     public function __construct(public Message $message)
     {
-        
+            
     }
 
     public function broadcastWith(): array
@@ -45,9 +45,8 @@ class SocketMessage implements ShouldBroadcastNow
         if($m->group_id) {
             $channels[] = new PrivateChannel('message.group.' . $m->group_id);
         } else {
-            $channels =  [
-                new PrivateChannel('message.user.' . collect([$m->sender_id, $m->receiver_id])->sort()->implode('-')),
-            ];
+            $channels[] =
+                new PrivateChannel('message.user.' . collect([$m->sender_id, $m->receiver_id])->sort()->implode('-'));
         }
 
         return $channels;

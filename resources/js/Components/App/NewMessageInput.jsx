@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 const NewMessageInput = ({ value, onChange, onSend }) => {
     const input = useRef();
 
+    // send message by enter key
     const onInputKeyDown = (ev) => {
         if(ev.key === "Enter" && !ev.shiftKey) {
             ev.preventDefault();

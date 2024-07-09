@@ -26,16 +26,10 @@ class MessageController extends Controller
         ->where('receiver_id', auth()->id())
         ->latest()
         ->paginate(10);
-
-        $messages->transform(function ($message) {
-            $message->sender = new UserResource($message->sender);
-            $message->attachments = new MessageAttachmentResource($message->attachments);
-            return $message;
-        });
         
         return inertia('Home', [    
             'selectedConversation' => $user->toConversationArray(),
-            'messages' => $messages 
+            'messages' => MessageResource::collection($messages) 
         ]);
     }
 
@@ -88,8 +82,7 @@ class MessageController extends Controller
 
         $message = Message::create($data);
 
-        $attachments = [];
-        
+        $attachments = [];        
         if($files) {
             foreach ($files as $file) {
                 $directory = 'attachments/' . Str::random(32);
@@ -103,12 +96,12 @@ class MessageController extends Controller
                     'path' => $file->store($directory, 'public'),
                 ];
                 $attachment = MessageAttachment::create($model);
-                $attachments = $attachment;
+                $attachments[] = $attachment;
             }
 
             $message->attachments = $attachments;
         }
-
+        
         // Update last message id in conversation of two user if receiver id exists
         if ($receiverId) {
             Conversation::updateConversationWithMessage($receiverId, auth()->id(), $message);

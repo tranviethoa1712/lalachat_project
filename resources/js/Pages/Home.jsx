@@ -8,15 +8,14 @@ import ConversationHeader from '@/Components/App/ConversationHeader';
 import MessageInput from '@/Components/App/MessageInput';
 
 function Home({ selectedConversation = null, messages = null }) {
-    if (messages) {
-        console.log('messages', messages)
-    }
     const [ localMessages, setLocalMessages ] = useState([]);
     const messagesCtrRef = useRef(null);
 
     useEffect(() => {
         setTimeout(() => {
-            messagesCtrRef.current.scrollTop = messagesCtrRef.current.scrollHeight;
+            if (messagesCtrRef.current) {
+                messagesCtrRef.current.scrollTop = messagesCtrRef.current.scrollHeight;
+            }
         }, 10);
     }, [selectedConversation]);
 
@@ -24,9 +23,6 @@ function Home({ selectedConversation = null, messages = null }) {
         setLocalMessages(messages ? messages.data.reverse() : [])
     }, [messages]);
 
-    if (localMessages) {
-        console.log('localMessages', localMessages)
-    }
     return (
         <>
             {!messages && (

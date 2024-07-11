@@ -1,16 +1,18 @@
 import { Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import ChatLayout from '@/Layouts/ChatLayout';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
 import MessageItem from '@/Components/App/MessageItem';
 import ConversationHeader from '@/Components/App/ConversationHeader';
 import MessageInput from '@/Components/App/MessageInput';
 import { useEventBus } from '@/EventBus';
+import axios from 'axios';
 
 function Home({ selectedConversation = null, messages = null }) {
     const [ localMessages, setLocalMessages ] = useState([]);
     const messagesCtrRef = useRef(null);
+    const loadMoreIntersect = useRef(null);
     const { on } = useEventBus();
 
     const messageCreated = (message) => {
@@ -31,8 +33,46 @@ function Home({ selectedConversation = null, messages = null }) {
         }
     }
 
+    /**
+     * useCallback(fn, dependencies): The function value that you want to cache
+     * React will give you the same function again if the dependencies have not changed since the last render
+     * Otherwise, it will give you the function that you have passed during the current render, and store it in case it can be reused later
+     * React will not call your function. The function is returned to you so you can decide when and whether to call it
+     */
+    const loadMoreMessages = useCallback(() => {
+        // Find the first message object
+        const firstMessage = localMessages[0];
+        axios
+            .get(route("message.loadOlder", firstMessage.id))
+            .then(({ data }) => {
+               if (data.data.length === 0) {
+                setNoMoreMessages(true);
+                return
+               }
+
+               /**
+                * Calculate how much is scrolled from bottom and
+                * scroll to the same position from bottom after messages are loaded
+                * scrollHeight: get total height of scroll div
+                * scrollTop: get current pixels of div is scrolled
+                * clientHeight: the 'viewable' height of an element in pixels, including padding, but not the border, scrollbar or margin
+                */
+               const scrollHeight = messagesCtrRef.current.scrollHeight;
+               const scrollTop = messagesCtrRef.current.scrollTop;
+               const clientHeight = messagesCtrRef.current.clientHeight;
+               const tmpScrollFromBottom = scrollHeight - scrollTop - clientHeight;
+               console.log("tmpScrollFromBottom", tmpScrollFromBottom);
+               setScrollFromBottom(scrollHeight - scrollTop - clientHeight); // ex:900px - 0px - 300px = 600px
+
+               setLocalMessages((prevMessages) => {
+                    return [...data.data.reverse(), ...prevMessages];
+               })
+            });
+    }, [localMessages]);
+
     useEffect(() => {
         setTimeout(() => {
+            // add scroll includes overflow hidden elements by reference to a DOM nodes and use API browser to set
             if (messagesCtrRef.current) {
                 messagesCtrRef.current.scrollTop = messagesCtrRef.current.scrollHeight;
             }
@@ -40,15 +80,44 @@ function Home({ selectedConversation = null, messages = null }) {
 
         const offCreated = on('message.created', messageCreated);
 
+        setScrollFromBottom(0);
+        setNoMoreMessages(false);
+
         return () => {
+            // React cleans up effects from the previous render before running the effects next time
             offCreated();
         };
 
     }, [selectedConversation]);
 
     useEffect(() => {
-        setLocalMessages(messages ? messages.data.reverse() : [])
+        setLocalMessages(messages ? messages.data.reverse() : []);
     }, [messages]);
+
+    useEffect(() => {
+        // Recover scroll from bottom after messages are laoded
+        // offsetHeight: returns the viewable height of an element (in pixels), including padding, border and scrollbar, but not the margin
+        if (messagesCtrRef.current && scrollFromBottom !== null) {
+            messagesCtrRef.current.scrollTop = 
+            messagesCtrRef.current.scrollHeight -
+            messagesCtrRef.current.offsetHeight -
+            scrollFromBottom; // previous ex: 900px - 300 - 600 = 0px
+        }
+
+        if (noMoreMessages) {
+            return;
+        }
+
+        /**
+         * IntersectionObserver used:
+         * if we scroll down the page the intersection ratio will be going up until it meets the designed threshold
+         * and that's when the callback function is executed.
+         * Can unobserve our target when the component unmounts (return in Effect Hook).
+         */
+        const observer = new IntersectionObserver(
+            
+        );
+    }, [localMessages]);
 
     return (
         <>
@@ -69,8 +138,8 @@ function Home({ selectedConversation = null, messages = null }) {
                         ref={messagesCtrRef}
                         className='flex-1 overflow-y-auto p-5'
                     >
-                        {/* Messages */}
 
+                        {/* Messages */}
                         {localMessages.length === 0 && (
                             <div className='flex justify-center items-center h-full'>
                                 <div className='text-lg text-slate-200'>
@@ -80,6 +149,7 @@ function Home({ selectedConversation = null, messages = null }) {
                         )}
                         {localMessages.length > 0 && (
                             <div className='flex-1 flex flex-col'>
+                                <div ref={loadMoreIntersect}></div>
                                 {localMessages.map((message) => (
                                     <MessageItem
                                         key={message.id}
@@ -89,6 +159,8 @@ function Home({ selectedConversation = null, messages = null }) {
                             </div>
                         )}
                     </div>
+                    {/* End Messages */}
+
                     <MessageInput conversation={selectedConversation} />
                 </>
             )}

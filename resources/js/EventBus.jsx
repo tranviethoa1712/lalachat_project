@@ -1,7 +1,9 @@
 import React from "react";
 
+// Declare Event Bus Context
 export const EventBusContext = React.createContext();
 
+// Target to props two funcions of Provider of EventBusContext to child components
 export const EventBusProvider = ({ children }) => {
     const [events, setEvents] = React.useState({});
 
@@ -13,11 +15,11 @@ export const EventBusProvider = ({ children }) => {
         }
     };
 
+    // Set key(callback name) => value(callback) | ex: {[massage.created => messageCreated]}
     const on = (name, cb) => {
         if (!events[name]) {
             events[name] = [];
         }
-
         events[name].push(cb); 
 
         return () => {
@@ -33,6 +35,7 @@ export const EventBusProvider = ({ children }) => {
     );
 };
 
+// used to read EventBusContext
 export const useEventBus = () => {
     return React.useContext(EventBusContext)
 }

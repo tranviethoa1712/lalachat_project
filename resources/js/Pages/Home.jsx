@@ -14,6 +14,8 @@ function Home({ selectedConversation = null, messages = null }) {
     const messagesCtrRef = useRef(null);
     const loadMoreIntersect = useRef(null);
     const { on } = useEventBus();
+    const [noMoreMessages, setNoMoreMessages] = useState([]);
+    const [scrollFromBottom, setScrollFromBottom] = useState([]);
 
     const messageCreated = (message) => {
         if(
@@ -114,9 +116,9 @@ function Home({ selectedConversation = null, messages = null }) {
          * and that's when the callback function is executed.
          * Can unobserve our target when the component unmounts (return in Effect Hook).
          */
-        const observer = new IntersectionObserver(
+        // const observer = new IntersectionObserver(
             
-        );
+        // );
     }, [localMessages]);
 
     return (

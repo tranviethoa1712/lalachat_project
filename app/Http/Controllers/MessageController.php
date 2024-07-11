@@ -20,7 +20,7 @@ class MessageController extends Controller
 {
     public function byUser(User $user)
     {
-        $messages = Message::where('sender_id', auth()->id())
+        $message = Message::where('sender_id', auth()->id())
         ->where('receiver_id', $user->id)
         ->orWhere('sender_id', $user->id)
         ->where('receiver_id', auth()->id())
@@ -29,7 +29,7 @@ class MessageController extends Controller
         
         return inertia('Home', [    
             'selectedConversation' => $user->toConversationArray(),
-            'messages' => MessageResource::collection($messages) 
+            'messages' => MessageResource::collection($message) 
         ]);
     }
 
@@ -41,7 +41,7 @@ class MessageController extends Controller
 
         return inertia('Home', [
             'selectedConversation' => $group->toConversationArray(),
-            'messages' => $message
+            'messages' => MessageResource::collection($message)
         ]);
     }
 

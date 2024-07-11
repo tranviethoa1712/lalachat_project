@@ -34,11 +34,12 @@ const ChatLayout = ({ children }) => {
             return olderUsers.map((u) => {
                 // If the message is for user
                 if (
-                    message.reveiver_id && !u.is_group &&
+                    message.receiver_id && !u.is_group &&
                     (u.id == message.sender_id || u.id == message.receiver_id)
                 ) {
                     u.last_message = message.message;
                     u.last_message_date = message.created_at;
+                    console.log(u);
                     return u;
                 }
 
@@ -49,9 +50,10 @@ const ChatLayout = ({ children }) => {
                 ) {
                     u.last_message = message.message;
                     u.last_message_date = message.created_at;
+                    console.log(u);
                     return u;
                 }
-
+                // console.log(u);
                 return u;
             });
         });

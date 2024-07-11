@@ -25,9 +25,10 @@ const MessageInput = (( conversation = null ) => {
         formData.append("message", newMessage); 
         if (conversation.conversation.is_user) {
             formData.append("receiver_id", conversation.conversation.id);
-        } else if (conversation.is_group) {
+        } else if (conversation.conversation.is_group) {
             formData.append("group_id", conversation.conversation.id);
         }
+        console.log(formData);
 
         setMessageSending(true);
         axios.post(route("message.store"), formData, {

@@ -16,6 +16,8 @@ function Home({ selectedConversation = null, messages = null }) {
     const { on } = useEventBus();
     const [noMoreMessages, setNoMoreMessages] = useState([]);
     const [scrollFromBottom, setScrollFromBottom] = useState([]);
+    const [showAttachmentPreview, setShowAttachmentPreview] = useState(false);
+    const [previewAttachment, setPreviewAttachment] = useState({});
 
     const messageCreated = (message) => {
         if(
@@ -71,6 +73,13 @@ function Home({ selectedConversation = null, messages = null }) {
                })
             });
     }, [localMessages]);
+
+    const onAttachmentClick = (attachments, index) => {
+        setPreviewAttachment({
+            attachments, index
+        });
+        setShowAttachmentPreview(true);
+    }
 
     useEffect(() => {
         setTimeout(() => {
@@ -165,6 +174,15 @@ function Home({ selectedConversation = null, messages = null }) {
 
                     <MessageInput conversation={selectedConversation} />
                 </>
+            )}
+            
+            {previewAttachment.attachments && (
+                <AttachmentPreviewModal 
+                    attachments={previewAttachment.attachments}
+                    index={previewAttachment.index}
+                    show={showAttachmentPreview}
+                    onClose={() => setShowAttachmentPreview(false)}
+                />
             )}
         </>
     );

@@ -23,8 +23,7 @@ export const EventBusProvider = ({ children }) => {
         events[name].push(cb); 
 
         return () => {
-            // remove previous callback anh return curren cb
-            events[name] = events[name].filter((callback) => callback !== cb);
+            events[name] = events[name].filter((callback) => callback !== cb); // ????
         };
     }
 

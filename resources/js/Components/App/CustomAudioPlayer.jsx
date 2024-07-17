@@ -1,6 +1,7 @@
 import { PauseCircleIcon, PlayCircleIcon } from "@heroicons/react/24/solid";
+import { useRef, useState } from "react";
 
-const { useRef, useState } = require("react")
+
 
 
 const CustomAudioPlayer = ({ file, showVolume = true }) => {
@@ -45,7 +46,7 @@ const CustomAudioPlayer = ({ file, showVolume = true }) => {
     };
 
     return (
-        <div className="w-full flex items-center gap-2 py-2 px-3 rounded-md bg-slate-800">
+        <div className="w-full flex items-center gap-2 py-3 px-5 rounded-md bg-slate-800">
             <audio 
                 src={file.url}
                 ref={audioRef}

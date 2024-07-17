@@ -8,8 +8,10 @@ import ConversationHeader from '@/Components/App/ConversationHeader';
 import MessageInput from '@/Components/App/MessageInput';
 import { useEventBus } from '@/EventBus';
 import axios from 'axios';
+import AttachmentPreviewModal from '@/Components/App/AttachmentPreviewModal';
 
 function Home({ selectedConversation = null, messages = null }) {
+    console.log(messages, messages);
     const [ localMessages, setLocalMessages ] = useState([]);
     const messagesCtrRef = useRef(null);
     const loadMoreIntersect = useRef(null);
@@ -65,7 +67,6 @@ function Home({ selectedConversation = null, messages = null }) {
                const scrollTop = messagesCtrRef.current.scrollTop;
                const clientHeight = messagesCtrRef.current.clientHeight;
                const tmpScrollFromBottom = scrollHeight - scrollTop - clientHeight;
-               console.log("tmpScrollFromBottom", tmpScrollFromBottom);
                setScrollFromBottom(scrollHeight - scrollTop - clientHeight); // ex:900px - 0px - 300px = 600px
 
                setLocalMessages((prevMessages) => {
@@ -165,6 +166,7 @@ function Home({ selectedConversation = null, messages = null }) {
                                     <MessageItem
                                         key={message.id}
                                         message={message}
+                                        attachmentClick={onAttachmentClick}
                                     />
                                 ))}
                             </div>
@@ -177,7 +179,7 @@ function Home({ selectedConversation = null, messages = null }) {
             )}
             
             {previewAttachment.attachments && (
-                <AttachmentPreviewModal 
+                <AttachmentPreviewModal
                     attachments={previewAttachment.attachments}
                     index={previewAttachment.index}
                     show={showAttachmentPreview}

@@ -1,7 +1,5 @@
-import { isAudio, isPreviewable } from "@/helpers";
+import { isAudio, isImage, isPDF, isPreviewable, isVideo } from "@/helpers";
 import { ArrowDownTrayIcon, PaperClipIcon, PlayCircleIcon } from "@heroicons/react/24/solid";
-
-
 
 const MessageAttachments = ({attachments, attachmentClick}) => {
     return (
@@ -21,18 +19,6 @@ const MessageAttachments = ({attachments, attachmentClick}) => {
 
                             }
                         >
-                            {!isAudio(attachment) && (
-                                <a 
-                                    onClick={(ev) => ev.stopPropagation()}
-                                    download
-                                    href={attachment.url}
-                                    className="z-20 opacity-100 group-hover:opacity-100 transition-all 
-                                    w-8 h-8 flex items-center justify-center text-gray-100 bg-gray-700
-                                    rounded absolute right-0 top-0 cursor-pointer hover:bg-gray-800"
-                                >
-                                    <ArrowDownTrayIcon className="w-4 h-4" />
-                                </a>
-                            )}
 
                             {isImage(attachment) &&  (
                                 <img 
@@ -59,16 +45,27 @@ const MessageAttachments = ({attachments, attachmentClick}) => {
                                 </div>
                             )}
                             {isPDF(attachment) && (
-                                <div className="relative flex justify-center items-center">
+                                <div className="relative flex justify-center items-center w-full h-full">
                                     <div className="absolute left-0 top-0 right-0 bottom-0">
                                         <iframe
                                             src={attachment.url}
                                             className="w-full h-full"
                                         >
-
-                                        </iframe>
+                                        </iframe> 
                                     </div>
                                 </div>
+                            )}
+                            {!isAudio(attachment) && (
+                                <a 
+                                    onClick={(ev) => ev.stopPropagation()}
+                                    download
+                                    href={attachment.url}
+                                    className="z-20 opacity-100 group-hover:opacity-100 transition-all 
+                                    w-8 h-8 flex items-center justify-center text-gray-100 bg-gray-700
+                                    rounded absolute right-0 top-0 cursor-pointer hover:bg-gray-800"
+                                >
+                                    <ArrowDownTrayIcon className="w-4 h-4" />
+                                </a>
                             )}
                             {!isPreviewable(attachment) && (
                                 <a 
@@ -77,7 +74,7 @@ const MessageAttachments = ({attachments, attachmentClick}) => {
                                     onClick={(ev) => ev.stopPropagation()}
                                 >
                                     <PaperClipIcon className="w-10 h-10 mb-3" />
-                                    <small>{attachment.name}</small>
+                                    <small className="text-center">{attachment.name}</small>
                                 </a>
                             )}
                         </div>

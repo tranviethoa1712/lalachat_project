@@ -4,6 +4,9 @@ import NewMessageInput from "./NewMessageInput";
 import axios from "axios";
 import EmojiPicker from "emoji-picker-react";
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
+import CustomAudioPlayer from "./CustomAudioPlayer";
+import AttachmentPreview from "./AttachmentPreview";
+import { isAudio, isImage } from "@/helpers";
 
 const MessageInput = (( conversation = null ) => {
     const [newMessage, setNewMessage] = useState("");
@@ -22,8 +25,10 @@ const MessageInput = (( conversation = null ) => {
             };
         });
 
+        ev.target.value = null; 
+
         setChosenFiles((prevFiles) => {
-            return [...prevFiles, ...updatedFiles];
+            return prevFiles ? [...prevFiles, ...updatedFiles] : updatedFiles;
         });
     }
 
@@ -31,7 +36,7 @@ const MessageInput = (( conversation = null ) => {
         if(messageSending) {
             return;
         }
-        if(newMessage.trim() === "") {
+        if(newMessage.trim() === "" && chosenFiles.length === 0) {
             setInputErrorMessage("Please provide a message or upload attachments");
 
             setTimeout(() => {
@@ -39,11 +44,12 @@ const MessageInput = (( conversation = null ) => {
             }, 5000);
             return;
         }
+        
+        const formData = new FormData();
         chosenFiles.forEach((file) => {
             formData.append("attachments[]", file.file);
         });
 
-        const formData = new FormData();
         formData.append("message", newMessage); 
         if (conversation.conversation.is_user) {
             formData.append("receiver_id", conversation.conversation.id);
@@ -114,6 +120,7 @@ const MessageInput = (( conversation = null ) => {
                         type="file"
                         multiple
                         accept="image/*"
+                        onChange={onFileChange}
                         className="absolute left-0 top-0 right-0 bottom-0 z-20 opacity-0 cursor-pointer"
                     />
                 </button>
@@ -143,7 +150,7 @@ const MessageInput = (( conversation = null ) => {
                     </p>
                 )}
                 <div className="flex flex-wrap gap-1 mt-2">
-                    {chosenFiles.map((file) => (
+                    {chosenFiles.length > 0 && chosenFiles.map((file) => (
                         <div
                             key={file.file.name}
                             className={

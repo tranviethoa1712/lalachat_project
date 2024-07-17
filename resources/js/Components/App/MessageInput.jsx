@@ -1,21 +1,42 @@
-import { FaceSmileIcon, HandThumbUpIcon, PaperAirplaneIcon, PaperClipIcon, PhotoIcon } from "@heroicons/react/24/solid";
+import { FaceSmileIcon, HandThumbUpIcon, PaperAirplaneIcon, PaperClipIcon, PhotoIcon, XCircleIcon } from "@heroicons/react/24/solid";
 import { useState } from "react";
 import NewMessageInput from "./NewMessageInput";
 import axios from "axios";
 import EmojiPicker from "emoji-picker-react";
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
+import CustomAudioPlayer from "./CustomAudioPlayer";
+import AttachmentPreview from "./AttachmentPreview";
+import { isAudio, isImage } from "@/helpers";
 
 const MessageInput = (( conversation = null ) => {
     const [newMessage, setNewMessage] = useState("");
     const [inputErrorMessage, setInputErrorMessage] = useState("");
     const [messageSending, setMessageSending] = useState(false);
-    const[chosenFiles, setUploadProgress] = useState(0);
+    const[chosenFiles, setChosenFiles] = useState(0);
+    const[uploadProgress, setUploadProgress] = useState(0);
+
+    const onFileChange = (ev) => {
+        const files = ev.target.files;
+
+        const updatedFiles = [...files].map((file) => {
+            return {
+                file: file,
+                url: URL.createObjectURL(file),
+            };
+        });
+
+        ev.target.value = null; 
+
+        setChosenFiles((prevFiles) => {
+            return prevFiles ? [...prevFiles, ...updatedFiles] : updatedFiles;
+        });
+    }
 
     const onSendClick = () => {
         if(messageSending) {
             return;
         }
-        if(newMessage.trim() === "") {
+        if(newMessage.trim() === "" && chosenFiles.length === 0) {
             setInputErrorMessage("Please provide a message or upload attachments");
 
             setTimeout(() => {
@@ -23,8 +44,12 @@ const MessageInput = (( conversation = null ) => {
             }, 5000);
             return;
         }
-
+        
         const formData = new FormData();
+        chosenFiles.forEach((file) => {
+            formData.append("attachments[]", file.file);
+        });
+
         formData.append("message", newMessage); 
         if (conversation.conversation.is_user) {
             formData.append("receiver_id", conversation.conversation.id);
@@ -39,12 +64,21 @@ const MessageInput = (( conversation = null ) => {
                 const progress = Math.round(
                     (progressEvent.loaded / progressEvent.total) * 100
                 );
+                console.log(progress);
+                setUploadProgress(progress);
             }
         }).then((response) => {
             setNewMessage("");
             setMessageSending(false);
+            setUploadProgress(0);
+            setChosenFiles([]);
         }).catch((error) => {
             setMessageSending(false);
+            setChosenFiles([]);
+            const message = error?.response?.data?.message;
+            setInputErrorMessage(
+                message || "An error occurred while sending message"
+            );
         });
         
     }
@@ -76,6 +110,7 @@ const MessageInput = (( conversation = null ) => {
                     <input 
                         type="file"
                         multiple
+                        onChange={onFileChange}
                         className="absolute left-0 top-0 right-0 bottom-0 z-20 opacity-0 cursor-pointer"
                     />
                 </button>
@@ -85,6 +120,7 @@ const MessageInput = (( conversation = null ) => {
                         type="file"
                         multiple
                         accept="image/*"
+                        onChange={onFileChange}
                         className="absolute left-0 top-0 right-0 bottom-0 z-20 opacity-0 cursor-pointer"
                     />
                 </button>
@@ -104,11 +140,57 @@ const MessageInput = (( conversation = null ) => {
                         <span className="hidden sm:inline">Send</span>
                     </button>
                 </div>
+                {!!uploadProgress && (
+                    <progress className="progress progress-success w-full" value={uploadProgress} max="100">
+                    </progress>
+                )}
                 {inputErrorMessage && (
                     <p className="text-xs text-red-400">
                         {inputErrorMessage}
                     </p>
                 )}
+                <div className="flex flex-wrap gap-1 mt-2">
+                    {chosenFiles.length > 0 && chosenFiles.map((file) => (
+                        <div
+                            key={file.file.name}
+                            className={
+                                `relative flex justify-between cursor-pointer ` +
+                                (!isImage(file.file) ? " w[240px]" : "")
+                            }
+                        >
+                            {isImage(file.file) && (
+                                <img    
+                                    src={file.url}
+                                    alt=""
+                                    className="w-16 h-16 object-cover"
+                                />
+                            )}
+                            {isAudio(file.file) && (
+                                <CustomAudioPlayer
+                                    file={file}
+                                    showVolume={false}
+                                />
+                            )}
+                            {!isAudio(file.file) && !isImage(file.file) && (
+                                <AttachmentPreview file={file} />
+                            )}
+
+                            <button
+                                onClick={() => {
+                                    setChosenFiles(
+                                        chosenFiles.filter(
+                                            (f) => f.file.name !== file.file.name
+                                        )
+                                    )
+                                }}
+                                className="absolute w-6 h-6 rounded-full bg-gray-800 -right-2-top-2 
+                                text-gray-300 hover:text-gray-100 z-10"
+                            >
+                                <XCircleIcon className="w-6" />
+                            </button>
+                        </div>
+                    ))}
+                </div>
             </div>
             <div className="order-3 xs:order-3 p-2 flex">
                 <Popover className={"relative"}>

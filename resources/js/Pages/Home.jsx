@@ -8,14 +8,18 @@ import ConversationHeader from '@/Components/App/ConversationHeader';
 import MessageInput from '@/Components/App/MessageInput';
 import { useEventBus } from '@/EventBus';
 import axios from 'axios';
+import AttachmentPreviewModal from '@/Components/App/AttachmentPreviewModal';
 
 function Home({ selectedConversation = null, messages = null }) {
+    console.log(messages, messages);
     const [ localMessages, setLocalMessages ] = useState([]);
     const messagesCtrRef = useRef(null);
     const loadMoreIntersect = useRef(null);
     const { on } = useEventBus();
     const [noMoreMessages, setNoMoreMessages] = useState([]);
     const [scrollFromBottom, setScrollFromBottom] = useState([]);
+    const [showAttachmentPreview, setShowAttachmentPreview] = useState(false);
+    const [previewAttachment, setPreviewAttachment] = useState({});
 
     const messageCreated = (message) => {
         if(
@@ -63,7 +67,6 @@ function Home({ selectedConversation = null, messages = null }) {
                const scrollTop = messagesCtrRef.current.scrollTop;
                const clientHeight = messagesCtrRef.current.clientHeight;
                const tmpScrollFromBottom = scrollHeight - scrollTop - clientHeight;
-               console.log("tmpScrollFromBottom", tmpScrollFromBottom);
                setScrollFromBottom(scrollHeight - scrollTop - clientHeight); // ex:900px - 0px - 300px = 600px
 
                setLocalMessages((prevMessages) => {
@@ -71,6 +74,13 @@ function Home({ selectedConversation = null, messages = null }) {
                })
             });
     }, [localMessages]);
+
+    const onAttachmentClick = (attachments, index) => {
+        setPreviewAttachment({
+            attachments, index
+        });
+        setShowAttachmentPreview(true);
+    }
 
     useEffect(() => {
         setTimeout(() => {
@@ -156,6 +166,7 @@ function Home({ selectedConversation = null, messages = null }) {
                                     <MessageItem
                                         key={message.id}
                                         message={message}
+                                        attachmentClick={onAttachmentClick}
                                     />
                                 ))}
                             </div>
@@ -165,6 +176,15 @@ function Home({ selectedConversation = null, messages = null }) {
 
                     <MessageInput conversation={selectedConversation} />
                 </>
+            )}
+            
+            {previewAttachment.attachments && (
+                <AttachmentPreviewModal
+                    attachments={previewAttachment.attachments}
+                    index={previewAttachment.index}
+                    show={showAttachmentPreview}
+                    onClose={() => setShowAttachmentPreview(false)}
+                />
             )}
         </>
     );

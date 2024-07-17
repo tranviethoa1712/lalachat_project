@@ -27,6 +27,7 @@ class MessageController extends Controller
         ->latest()
         ->paginate(10);
         
+        // dd(MessageResource::collection($message));
         return inertia('Home', [    
             'selectedConversation' => $user->toConversationArray(),
             'messages' => MessageResource::collection($message) 
@@ -38,7 +39,6 @@ class MessageController extends Controller
         $message = Message::where('group_id', $group->id)
         ->latest()
         ->paginate(10);
-
         return inertia('Home', [
             'selectedConversation' => $group->toConversationArray(),
             'messages' => MessageResource::collection($message)

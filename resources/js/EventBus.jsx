@@ -7,6 +7,9 @@ export const EventBusContext = React.createContext();
 export const EventBusProvider = ({ children }) => {
     const [events, setEvents] = React.useState({});
 
+    /**
+     * change data of the callback
+     */
     const emit = (name, data) => {
         if (events[name]) {
             for (let cb of events[name]) {
@@ -15,7 +18,10 @@ export const EventBusProvider = ({ children }) => {
         }
     };
 
-    // Set key(callback name) => value(callback) | ex: {[massage.created => messageCreated]}
+    /**
+     * Set key(callback name) => value(callback) | ex: {[massage.created => messageCreated]}
+     * Target: cache function
+     * */
     const on = (name, cb) => {
         if (!events[name]) {
             events[name] = [];

@@ -8,6 +8,8 @@ import CustomAudioPlayer from "./CustomAudioPlayer";
 import AttachmentPreview from "./AttachmentPreview";
 import { isAudio, isImage } from "@/helpers";
 import AudioRecoder from "./AudioRecoder";
+import { useEventBus } from "@/EventBus";
+
 
 const MessageInput = (( conversation = null ) => {
     const [newMessage, setNewMessage] = useState("");
@@ -47,11 +49,13 @@ const MessageInput = (( conversation = null ) => {
         }
         
         const formData = new FormData();
-        chosenFiles.forEach((file) => {
-            formData.append("attachments[]", file.file);
-        });
-
+        if(chosenFiles.length > 0) {
+            chosenFiles.forEach((file) => {
+                formData.append("attachments[]", file.file);
+            });
+        }    
         formData.append("message", newMessage); 
+        
         if (conversation.conversation.is_user) {
             formData.append("receiver_id", conversation.conversation.id);
         } else if (conversation.conversation.is_group) {

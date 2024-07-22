@@ -18,7 +18,9 @@ const ChatLayout = ({ children }) => {
     const [onlineUsers, setOnlineUsers] = useState({});
     
     // Check online users
-    const isUserOnline = (userId) => onlineUsers[userId];
+    const isUserOnline = (userId) => {
+        return onlineUsers[userId]
+    };
 
     const onSearch  = (ev) => {
         const search = ev.target.value.toLowerCase();
@@ -29,41 +31,74 @@ const ChatLayout = ({ children }) => {
         )
     }
 
-    const messageCreated = (message) => {
-        setLocalConversations((olderUsers) => {
-            return olderUsers.map((u) => {
-                // If the message is for user
-                if (
-                    message.receiver_id && !u.is_group &&
-                    (u.id == message.sender_id || u.id == message.receiver_id)
-                ) {
-                    u.last_message = message.message;
-                    u.last_message_date = message.created_at;
-                    console.log(u);
-                    return u;
-                }
-
-                // If the message is for group
-                if (message.group_id && 
-                    u.is_group &&
-                    u.id == message.group_id
-                ) {
-                    u.last_message = message.message;
-                    u.last_message_date = message.created_at;
-                    console.log(u);
-                    return u;
-                }
-                // console.log(u);
-                return u;
-            });
-        });
-    };
-
+    // Update cached message function
     useEffect(() => {
+        // Update message created
+        const messageCreated = (message) => {
+            setLocalConversations((olderUsers) => {
+                return olderUsers.map((u) => {
+                    // If the message is for user
+                    if (
+                        message.receiver_id && !u.is_group &&
+                        (u.id == message.sender_id || u.id == message.receiver_id)
+                    ) {
+                        u.last_message = message.message;
+                        u.last_message_date = message.created_at;
+                        return u;
+                    }
+
+                    // If the message is for group
+                    if (message.group_id && 
+                        u.is_group &&
+                        u.id == message.group_id
+                    ) {
+                        u.last_message = message.message;
+                        u.last_message_date = message.created_at;
+                        return u;
+                    }
+                    return u;
+                });
+            });
+        };
+
+        const messageDeleted = ({prevMessage}) => {
+            if (!prevMessage) {
+                return;
+            }
+
+            // Find the conversation by prevMessage and updated its last_message_id and date
+            setLocalConversations((olderUsers) => {
+                return olderUsers.map((u) => {
+                    // If the message is for user
+                    if (
+                        prevMessage.receiver_id && !u.is_group &&
+                        (u.id == prevMessage.sender_id || u.id == prevMessage.receiver_id)
+                    ) {
+                        u.last_message = prevMessage.message;
+                        u.last_message_date = prevMessage.created_at;
+                        return u;
+                    }
+
+                    // If the message is for group
+                    if (prevMessage.group_id && 
+                        u.is_group &&
+                        u.id == prevMessage.group_id
+                    ) {
+                        u.last_message = prevMessage.message;
+                        u.last_message_date = prevMessage.created_at;
+                        return u;
+                    }
+                    return u;
+                });
+            });
+        };
+
         const offCreated = on("message.created", messageCreated);
+        const offDeleted = on("message.deleted", messageDeleted);
 
         return () => {
             offCreated();
+            offDeleted();
         };
     }, [on]);
 
@@ -94,7 +129,9 @@ const ChatLayout = ({ children }) => {
     }, [localConversations]);
 
     useEffect(() => {
-        setLocalConversations(conversations);
+        setLocalConversations(() => {
+            return conversations;
+        });
     }, [conversations]);
 
     useEffect(() => {

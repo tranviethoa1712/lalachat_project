@@ -2,6 +2,7 @@ import { isAudio, isImage, isPDF, isPreviewable, isVideo } from "@/helpers";
 import { ArrowDownTrayIcon, PaperClipIcon, PlayCircleIcon } from "@heroicons/react/24/solid";
 
 const MessageAttachments = ({attachments, attachmentClick}) => {
+
     return (
         <>
             {attachments.length > 0 && (

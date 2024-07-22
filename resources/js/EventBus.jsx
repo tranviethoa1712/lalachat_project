@@ -8,7 +8,7 @@ export const EventBusProvider = ({ children }) => {
     const [events, setEvents] = React.useState({});
 
     /**
-     * change data of the callback
+     * change data of the exist callback
      */
     const emit = (name, data) => {
         if (events[name]) {
@@ -29,7 +29,7 @@ export const EventBusProvider = ({ children }) => {
         events[name].push(cb); 
 
         return () => {
-            events[name] = events[name].filter((callback) => callback !== cb); // ????
+            events[name] = events[name].filter((callback) => callback !== cb); 
         };
     }
 

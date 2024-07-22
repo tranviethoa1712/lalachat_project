@@ -4,6 +4,7 @@ import UserAvatar from "./UserAvatar";
 import GroupAvatar from "./GroupAvatar";
 
 const ConversationHeader = ({ selectedConversation }) => {
+    console.log("conversation header");
     return (
         <>
             {selectedConversation && (

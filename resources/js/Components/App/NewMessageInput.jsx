@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 
 const NewMessageInput = ({ value, onChange, onSend }) => {
-    const input = useRef();
+    const input = useRef(null);
 
     // send message by enter key
     const onInputKeyDown = (ev) => {
@@ -36,7 +36,7 @@ const NewMessageInput = ({ value, onChange, onSend }) => {
             rows="1"
             placeholder="Type a message"
             onKeyDown={onInputKeyDown}
-            onChange={(ev) => onChangeEvent(ev)}
+            onChange={onChangeEvent}
             className="input input-bordered w-full rounded-r-none resize-none overflow-y-auto max-h-40"
         >
 

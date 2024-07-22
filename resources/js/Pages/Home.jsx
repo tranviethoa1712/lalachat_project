@@ -11,23 +11,26 @@ import axios from 'axios';
 import AttachmentPreviewModal from '@/Components/App/AttachmentPreviewModal';
 
 function Home({ selectedConversation = null, messages = null }) {
-    console.log(messages, messages);
     const [ localMessages, setLocalMessages ] = useState([]);
     const messagesCtrRef = useRef(null);
+    const [noMoreMessages, setNoMoreMessages] = useState(false);
     const loadMoreIntersect = useRef(null);
+    const [scrollFromBottom, setScrollFromBottom] = useState(0);
     const { on } = useEventBus();
-    const [noMoreMessages, setNoMoreMessages] = useState([]);
-    const [scrollFromBottom, setScrollFromBottom] = useState([]);
     const [showAttachmentPreview, setShowAttachmentPreview] = useState(false);
     const [previewAttachment, setPreviewAttachment] = useState({});
+    const [isInitialRender, setIsInitialRender] = useState(true);
 
     const messageCreated = (message) => {
         if(
             selectedConversation
             && selectedConversation.is_group 
-            && selectedConversation.id == message.group_id) 
+            && selectedConversation.id == message.group_id
+        ) 
             {
-                setLocalMessages((prevMessages) => [...prevMessages, message]);
+                setLocalMessages((prevMessages) => {
+                    return [...prevMessages, message]
+                });
         }
         if(
             selectedConversation
@@ -35,9 +38,34 @@ function Home({ selectedConversation = null, messages = null }) {
             && (selectedConversation.id == message.sender_id ||
                  selectedConversation.id == message.receiver_id)) 
             {
-                setLocalMessages((prevMessages) => [...prevMessages, message]);
+                setLocalMessages((prevMessages) => { 
+                    return[...prevMessages, message]
+                }
+            );
         }
-    }
+    };
+
+    const messageDeleted = ({message}) => {
+        if(
+            selectedConversation
+            && selectedConversation.is_group 
+            && selectedConversation.id == message.group_id) 
+            {
+                setLocalMessages((prevMessages) => {
+                    return prevMessages.filter((m) => m.id !== message.id)
+                });
+        }
+        if(
+            selectedConversation
+            && selectedConversation.is_user
+            && (selectedConversation.id == message.sender_id ||
+                 selectedConversation.id == message.receiver_id)) 
+            {
+                setLocalMessages((prevMessages) => {
+                    return prevMessages.filter((m) => m.id !== message.id)
+                });
+        }
+    };
 
     /**
      * useCallback(fn, dependencies): The function value that you want to cache
@@ -46,14 +74,23 @@ function Home({ selectedConversation = null, messages = null }) {
      * React will not call your function. The function is returned to you so you can decide when and whether to call it
      */
     const loadMoreMessages = useCallback(() => {
+        console.log("loadMoreMessages");
+        
+        if(noMoreMessages) {
+            return;
+        }
+
         // Find the first message object
         const firstMessage = localMessages[0];
         axios
             .get(route("message.loadOlder", firstMessage.id))
             .then(({ data }) => {
                if (data.data.length === 0) {
-                setNoMoreMessages(true);
-                return
+                if(isInitialRender) {
+                    setIsInitialRender(false);
+                    setNoMoreMessages(true);
+                    return;
+                }
                }
 
                /**
@@ -67,13 +104,14 @@ function Home({ selectedConversation = null, messages = null }) {
                const scrollTop = messagesCtrRef.current.scrollTop;
                const clientHeight = messagesCtrRef.current.clientHeight;
                const tmpScrollFromBottom = scrollHeight - scrollTop - clientHeight;
-               setScrollFromBottom(scrollHeight - scrollTop - clientHeight); // ex:900px - 0px - 300px = 600px
+               setScrollFromBottom(tmpScrollFromBottom); // ex:900px - 0px - 300px = 600px
 
-               setLocalMessages((prevMessages) => {
-                    return [...data.data.reverse(), ...prevMessages];
-               })
+               if (isInitialRender) {
+                    setIsInitialRender(false);
+                    setLocalMessages((prevMessages) => [...data.data.reverse(), ...prevMessages]);
+                }
             });
-    }, [localMessages]);
+    }, [localMessages, isInitialRender, noMoreMessages]);
 
     const onAttachmentClick = (attachments, index) => {
         setPreviewAttachment({
@@ -84,13 +122,14 @@ function Home({ selectedConversation = null, messages = null }) {
 
     useEffect(() => {
         setTimeout(() => {
-            // add scroll includes overflow hidden elements by reference to a DOM nodes and use API browser to set
+            // Add scroll includes overflow hidden elements by reference to a DOM nodes and use API browser to set
             if (messagesCtrRef.current) {
                 messagesCtrRef.current.scrollTop = messagesCtrRef.current.scrollHeight;
             }
         }, 10);
 
         const offCreated = on('message.created', messageCreated);
+        const offDeleted = on('message.deleted', messageDeleted);
 
         setScrollFromBottom(0);
         setNoMoreMessages(false);
@@ -98,16 +137,21 @@ function Home({ selectedConversation = null, messages = null }) {
         return () => {
             // React cleans up effects from the previous render before running the effects next time
             offCreated();
+            offDeleted();
         };
 
     }, [selectedConversation]);
 
     useEffect(() => {
-        setLocalMessages(messages ? messages.data.reverse() : []);
+        setLocalMessages(() => {
+            console.log("Effect 2 Home");
+            return messages ? messages.data.reverse() : [];
+    });
     }, [messages]);
 
     useEffect(() => {
-        // Recover scroll from bottom after messages are laoded
+        console.log("localMessages uf3", localMessages);
+        // Recover scroll from bottom aftedr messages are laoded
         // offsetHeight: returns the viewable height of an element (in pixels), including padding, border and scrollbar, but not the margin
         if (messagesCtrRef.current && scrollFromBottom !== null) {
             messagesCtrRef.current.scrollTop = 
@@ -126,9 +170,25 @@ function Home({ selectedConversation = null, messages = null }) {
          * and that's when the callback function is executed.
          * Can unobserve our target when the component unmounts (return in Effect Hook).
          */
-        // const observer = new IntersectionObserver(
-            
-        // );
+        const observer = new IntersectionObserver(
+            (entries) => 
+                entries.forEach(
+                    (entry) => entry.isIntersecting && loadMoreMessages()
+                ),
+                {
+                    rootMargin: "0px 0px 250px 0px"
+                }
+        );
+        
+        if (loadMoreIntersect.current) {
+            setTimeout(() => {
+                observer.observe(loadMoreIntersect.current);
+            }, 100);
+        }
+
+        return () => {
+            observer.disconnect();
+        };
     }, [localMessages]);
 
     return (

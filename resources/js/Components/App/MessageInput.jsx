@@ -8,8 +8,6 @@ import CustomAudioPlayer from "./CustomAudioPlayer";
 import AttachmentPreview from "./AttachmentPreview";
 import { isAudio, isImage } from "@/helpers";
 import AudioRecoder from "./AudioRecoder";
-import { useEventBus } from "@/EventBus";
-
 
 const MessageInput = (( conversation = null ) => {
     const [newMessage, setNewMessage] = useState("");
@@ -85,7 +83,6 @@ const MessageInput = (( conversation = null ) => {
                 message || "An error occurred while sending message"
             );
         });
-        
     };
 
     const onLikeClick = () => {
@@ -104,13 +101,32 @@ const MessageInput = (( conversation = null ) => {
 
         axios
             .post(route("message.store"), data);
-
     };
 
     const recordedAudioReady = (file, url) => {
         setChosenFiles((prevFiles) => {
             return prevFiles ? [...prevFiles, {file, url,}] : [{file, url}]
         })
+    };
+
+    const onChangeNewMessage = (ev) => {
+        setNewMessage(() => {
+            return ev.target.value;
+        })
+    };
+
+    const onClickSetChosenFiles = () => {
+        setChosenFiles(
+            chosenFiles.filter(
+                (f) => f.file.name !== file.file.name
+            )
+        )
+    };
+
+    const onEmojiClickSetNewMessage = () => {
+        setNewMessage(() => {
+            return newMessage + ev.emoji;
+        });
     };
 
     return (
@@ -141,7 +157,7 @@ const MessageInput = (( conversation = null ) => {
                 <div className="flex">
                     <NewMessageInput
                         value={newMessage}
-                        onChange={(ev) => setNewMessage(ev.target.value)}
+                        onChange={onChangeNewMessage}
                         onSend={onSendClick}
                     />
                     <button onClick={onSendClick} disabled={messageSending} className="btn btn-info rounded-l-none">
@@ -188,13 +204,7 @@ const MessageInput = (( conversation = null ) => {
                             )}
 
                             <button
-                                onClick={() => {
-                                    setChosenFiles(
-                                        chosenFiles.filter(
-                                            (f) => f.file.name !== file.file.name
-                                        )
-                                    )
-                                }}
+                                onClick={onClickSetChosenFiles}
                                 className="absolute w-6 h-6 rounded-full bg-gray-800 -right-2-top-2 
                                 text-gray-300 hover:text-gray-100 z-10"
                             >
@@ -210,8 +220,7 @@ const MessageInput = (( conversation = null ) => {
                         <FaceSmileIcon className="w-6 h-6" />
                     </PopoverButton>
                     <PopoverPanel className={"absolute z-10 right-0 bottom-full"}>
-                        <EmojiPicker theme="cupcake" onEmojiClick={ev => setNewMessage(newMessage + ev.emoji)}>
-
+                        <EmojiPicker theme="cupcake" onEmojiClick={onEmojiClickSetNewMessage}>
                         </EmojiPicker>
                     </PopoverPanel>
                 </Popover>

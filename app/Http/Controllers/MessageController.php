@@ -27,7 +27,6 @@ class MessageController extends Controller
         ->latest()
         ->paginate(10);
         
-        // dd(MessageResource::collection($message));
         return inertia('Home', [    
             'selectedConversation' => $user->toConversationArray(),
             'messages' => MessageResource::collection($message) 
@@ -107,7 +106,7 @@ class MessageController extends Controller
             Conversation::updateConversationWithMessage($receiverId, auth()->id(), $message);
         }
         // Update last message id in Group if group id exists
-        if($groupId) {
+        if ($groupId) {
             Group::updateGroupWithMessage($groupId, $message);
         }
 
@@ -123,13 +122,31 @@ class MessageController extends Controller
      */
     public function destroy(Message $message)
     {
+        $group = null;
+        $conversation = null;
+        $lastMessage = null;
         // Check if the user is the owner of the message
         if($message->sender_id !== auth()->id()) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
+        // Check if the message is the group message
+        if ($message->group_id) {
+            $group = Group::where('last_message_id', $message->id)->first();
+        } else {
+            $conversation = Conversation::where('last_message_id', $message->id)->first();
+        }
         $message->delete();
 
-        return response('', 204);
+        if ($group) {
+            // Repopulate $group with latest database data
+            $group = Group::find($group->id);
+            $lastMessage = $group->lastMessage;
+        } else if ($conversation) {
+            $conversation = Conversation::find($conversation->id);
+            $lastMessage = $conversation->lastMessage;
+        }
+
+        return response()->json(['message' => $lastMessage ? new MessageResource($lastMessage) : null]);
     }
 }

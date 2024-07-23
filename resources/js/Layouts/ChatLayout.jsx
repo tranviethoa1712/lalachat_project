@@ -4,6 +4,7 @@ import {PencilSquareIcon} from "@heroicons/react/24/solid";
 import TextInput from "@/Components/TextInput";
 import ConversationItem from "@/Components/App/ConversationItem";
 import { useEventBus } from "@/EventBus";
+import GroupModal from "@/Components/App/GroupModal";
 
 
 const ChatLayout = ({ children }) => {
@@ -14,6 +15,7 @@ const ChatLayout = ({ children }) => {
     const [localConversations, setLocalConversations] = useState([]);
     const [sortedConversations, setSortedConversations] = useState([]);
     const {on} = useEventBus();
+    const [showGroupModal, setShowGroupModal] = useState(false);
 
     const [onlineUsers, setOnlineUsers] = useState({});
     
@@ -95,10 +97,14 @@ const ChatLayout = ({ children }) => {
 
         const offCreated = on("message.created", messageCreated);
         const offDeleted = on("message.deleted", messageDeleted);
+        const offModalShow = on("GroupModal.show", (group) => {
+            setShowGroupModal(true);
+        });
 
         return () => {
             offCreated();
             offDeleted();
+            offModalShow();
         };
     }, [on]);
 
@@ -179,7 +185,7 @@ const ChatLayout = ({ children }) => {
                     <div className="flex items-center justify-between py-2 px-3 text-xl font-medium">
                         <div className="">My Conversations</div>
                         <div className="tooltip tooltip-left" data-tip="Create new Group">
-                            <button>
+                            <button className="text-gray-400 hover:text-gray-200" onClick={() => setShowGroupModal(true)}>
                                 <PencilSquareIcon className="w-4 h-4 inline-block ml-2" />
                             </button>
                         </div>
@@ -210,8 +216,9 @@ const ChatLayout = ({ children }) => {
                     {children}
                 </div>
             </div>
+            <GroupModal show={showGroupModal} onClose={() => setShowGroupModal(false)} />
         </>
-    )
-}
+    );
+};
 
 export default ChatLayout;

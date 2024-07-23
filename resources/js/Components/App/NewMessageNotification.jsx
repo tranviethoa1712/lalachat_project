@@ -23,10 +23,6 @@ export default function NewMessageNotification({}) {
         })
     }, [on]);
 
-    useEffect(() => {
-        console.log("toasts", toasts);
-    }, [toasts]);
-
     return (
         <div className="toast toast-top toast-center min-w-[280px]">
             {toasts.map((toast) => (

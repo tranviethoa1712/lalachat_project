@@ -18,7 +18,7 @@ use Inertia\Inertia;
 //     ]);
 // });
 
-Route::middleware(['auth', 'verified'])->group(function() {
+Route::middleware(['auth', 'verified', 'active'])->group(function() {
     Route::get('/', [HomeController::class, 'home'])->name('dashboard');
 
     Route::get('/user/{user}', [MessageController::class, 'byUser'])->name('chat.user');
@@ -35,7 +35,7 @@ Route::middleware(['auth', 'verified'])->group(function() {
     Route::middleware(['admin'])->group(function() {
         Route::post('/user', [UserController::class, 'store'])->name('user.store');
         Route::post('/user/change-role/{user}', [UserController::class, 'changeRole'])->name('user.changeRole');
-        Route::post('/user/block-unlock/{user}', [UserController::class, 'blockUnLock'])->name('user.blockUnLock');
+        Route::post('/user/block-unlock/{user}', [UserController::class, 'blockUnblock'])->name('user.blockUnblock');
     });
 
 });

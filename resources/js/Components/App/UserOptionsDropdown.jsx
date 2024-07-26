@@ -1,13 +1,24 @@
 import { useEventBus } from "@/EventBus";
-import { Menu, MenuButton, MenuItem, MenuItems, Transition } from "@headlessui/react";
-import { EllipsisVerticalIcon, LockOpenIcon, LockClosedIcon, UserIcon } from "@heroicons/react/24/solid";
+import {
+    Menu,
+    MenuButton,
+    MenuItem,
+    MenuItems,
+    Transition,
+} from "@headlessui/react";
+import {
+    EllipsisVerticalIcon,
+    LockOpenIcon,
+    LockClosedIcon,
+    UserIcon,
+} from "@heroicons/react/24/solid";
 import axios from "axios";
 import { Fragment } from "react";
 
 export default function UserOptionsDropdown({ conversation }) {
     const { emit } = useEventBus();
     const changeUserRole = () => {
-        console.log("change user role");
+        ("change user role");
         if (!conversation.is_user) {
             return;
         }
@@ -17,40 +28,44 @@ export default function UserOptionsDropdown({ conversation }) {
             .post(route("user.changeRole", conversation.id))
             .then((res) => {
                 emit("toast.show", res.data.message);
-                console.log(res.data);
+                res.data;
             })
             .catch((err) => {
-                console.log(err);
-            })
+                err;
+            });
     };
 
     const onBlockUser = () => {
-        console.log("Block User");
-        if(!conversation.is_user) {
+        ("Block User");
+        if (!conversation.is_user) {
             return;
         }
 
         // Send axios post request to block or unblock user and show notification on success
-        axios   
+        axios
             .post(route("user.blockUnblock", conversation.id))
             .then((res) => {
                 emit("toast.show", res.data.message);
-                console.log(res.data);
+                res.data;
             })
             .catch((err) => {
-                console.log(err);
-            })
-    }
+                err;
+            });
+    };
 
     return (
         <div>
             <Menu as="div" className="relative inline-block text-left">
                 <div>
-                    <MenuButton className={"flex justify-center items-center w-8 h-8 rounded-full hover:bg-black/40"}>
+                    <MenuButton
+                        className={
+                            "flex justify-center items-center w-8 h-8 rounded-full hover:bg-black/40"
+                        }
+                    >
                         <EllipsisVerticalIcon className="h-5 w-5" />
                     </MenuButton>
                 </div>
-                <Transition 
+                <Transition
                     as={Fragment}
                     enter="transition ease-out duration-100"
                     enterFrom="transform opacity-0 scale-95"
@@ -66,9 +81,10 @@ export default function UserOptionsDropdown({ conversation }) {
                                     <button
                                         onClick={onBlockUser}
                                         className={`
-                                            ${active
-                                                ? "bg-black/30 text-white"
-                                                : "text-gray-100"
+                                            ${
+                                                active
+                                                    ? "bg-black/30 text-white"
+                                                    : "text-gray-100"
                                             } group flex w-full items-center rounded-md px-2 py-2 text-sm
                                         `}
                                     >
@@ -90,35 +106,36 @@ export default function UserOptionsDropdown({ conversation }) {
                         </div>
                         <div className="px-1 py-1">
                             <MenuItem>
-                            {({ active }) => (
-                                <button 
-                                    onClick={changeUserRole}
-                                    className={`
-                                            ${active
-                                                ? "bg-black/30 text-white"
-                                                : "text-gray-100"
+                                {({ active }) => (
+                                    <button
+                                        onClick={changeUserRole}
+                                        className={`
+                                            ${
+                                                active
+                                                    ? "bg-black/30 text-white"
+                                                    : "text-gray-100"
                                             } group flex w-full items-center rounded-md px-2 py-2 text-sm
                                     `}
-                                >
-                                    {conversation.is_admin && (
-                                        <>
-                                            <UserIcon className="w-4 h-4 mr-2" />
-                                            Make Regular User
-                                        </>
-                                    )}
-                                    {!conversation.is_admin && (
-                                        <>
-                                            <UserIcon className="w-4 h-4 mr-2" />
-                                            Make Admin
-                                        </>
-                                    )}
-                                </button>
-                            )}
+                                    >
+                                        {conversation.is_admin && (
+                                            <>
+                                                <UserIcon className="w-4 h-4 mr-2" />
+                                                Make Regular User
+                                            </>
+                                        )}
+                                        {!conversation.is_admin && (
+                                            <>
+                                                <UserIcon className="w-4 h-4 mr-2" />
+                                                Make Admin
+                                            </>
+                                        )}
+                                    </button>
+                                )}
                             </MenuItem>
                         </div>
                     </MenuItems>
                 </Transition>
             </Menu>
         </div>
-    )
+    );
 }

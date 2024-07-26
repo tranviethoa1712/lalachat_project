@@ -1,33 +1,52 @@
 import { useEventBus } from "@/EventBus";
-import { Menu, MenuButton, MenuItem, MenuItems, Transition } from "@headlessui/react";
-import { EllipsisVerticalIcon, LockOpenIcon, LockClosedIcon, UserIcon, TrashIcon } from "@heroicons/react/24/solid";
+import {
+    Menu,
+    MenuButton,
+    MenuItem,
+    MenuItems,
+    Transition,
+} from "@headlessui/react";
+import {
+    EllipsisVerticalIcon,
+    LockOpenIcon,
+    LockClosedIcon,
+    UserIcon,
+    TrashIcon,
+} from "@heroicons/react/24/solid";
 import axios from "axios";
 import { Fragment } from "react";
 
 export default function MessageOptionsDropdown({ message }) {
     const { emit } = useEventBus();
-    console.log("Mess Dropdown");
+    ("Mess Dropdown");
     const onMessageDelete = () => {
         // Send axios post request to delete message and show notification on success
-        axios.
-            delete(route("message.destroy", message.id))
+        axios
+            .delete(route("message.destroy", message.id))
             .then((response) => {
-                emit('message.deleted', {message, prevMessage: response.data.message});
+                emit("message.deleted", {
+                    message,
+                    prevMessage: response.data.message,
+                });
             })
             .catch((err) => {
                 console.error(err);
-            })
-    }   
+            });
+    };
 
     return (
         <div className="absolute right-full text-black top-1/2 -translate-y-1/2 z-10">
             <Menu as="div" className="relative inline-block text-left">
                 <div>
-                    <MenuButton className={"flex justify-center items-center w-8 h-8 rounded-full hover:bg-black/40"}>
+                    <MenuButton
+                        className={
+                            "flex justify-center items-center w-8 h-8 rounded-full hover:bg-black/40"
+                        }
+                    >
                         <EllipsisVerticalIcon className="h-5 w-5" />
                     </MenuButton>
                 </div>
-                <Transition 
+                <Transition
                     as={Fragment}
                     enter="transition ease-out duration-100"
                     enterFrom="transform opacity-0 scale-95"
@@ -52,5 +71,5 @@ export default function MessageOptionsDropdown({ message }) {
                 </Transition>
             </Menu>
         </div>
-    )
+    );
 }

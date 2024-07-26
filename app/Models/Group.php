@@ -10,8 +10,8 @@ class Group extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',
         'description',
+        'name',
         'owner_id',
         'last_message_id',
     ];

@@ -25,10 +25,6 @@ export default function Toast({}) {
         });
     }, [on]);
 
-    useEffect(() => {
-        "toasts", toasts;
-    }, [toasts]);
-
     return (
         <div className="toast toast-top toast-center min-w-[280px] w-full xs:w-auto">
             {toasts.map((toast, index) => (

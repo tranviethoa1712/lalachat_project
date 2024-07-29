@@ -18,7 +18,6 @@ import { Fragment } from "react";
 export default function UserOptionsDropdown({ conversation }) {
     const { emit } = useEventBus();
     const changeUserRole = () => {
-        ("change user role");
         if (!conversation.is_user) {
             return;
         }
@@ -36,7 +35,6 @@ export default function UserOptionsDropdown({ conversation }) {
     };
 
     const onBlockUser = () => {
-        ("Block User");
         if (!conversation.is_user) {
             return;
         }
@@ -46,10 +44,9 @@ export default function UserOptionsDropdown({ conversation }) {
             .post(route("user.blockUnblock", conversation.id))
             .then((res) => {
                 emit("toast.show", res.data.message);
-                res.data;
             })
             .catch((err) => {
-                err;
+                console.log(err);
             });
     };
 

@@ -43,7 +43,6 @@ const AudioRecoder = ({ fileReady }) => {
             setMediaRecorder(newMediaRecorder);
         } catch (error) {
             setRecording(false);
-            console.error("Error accessing microphone", error);
         }
     };
 

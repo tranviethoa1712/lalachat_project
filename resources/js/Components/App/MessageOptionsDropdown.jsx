@@ -8,9 +8,6 @@ import {
 } from "@headlessui/react";
 import {
     EllipsisVerticalIcon,
-    LockOpenIcon,
-    LockClosedIcon,
-    UserIcon,
     TrashIcon,
 } from "@heroicons/react/24/solid";
 import axios from "axios";
@@ -18,7 +15,6 @@ import { Fragment } from "react";
 
 export default function MessageOptionsDropdown({ message }) {
     const { emit } = useEventBus();
-    ("Mess Dropdown");
     const onMessageDelete = () => {
         // Send axios post request to delete message and show notification on success
         axios

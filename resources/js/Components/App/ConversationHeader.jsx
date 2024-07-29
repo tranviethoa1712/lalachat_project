@@ -26,7 +26,7 @@ const ConversationHeader = ({ selectedConversation }) => {
                 emit("toast.show", res.data.message);
             })
             .catch((err) => {
-                err;
+                console.log(err);
             });
     };
 

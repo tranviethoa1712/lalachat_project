@@ -24,7 +24,6 @@ const ConversationHeader = ({ selectedConversation }) => {
             .delete(route("group.destroy", selectedConversation.id))
             .then((res) => {
                 emit("toast.show", res.data.message);
-                "res delet", res.data.message;
             })
             .catch((err) => {
                 err;

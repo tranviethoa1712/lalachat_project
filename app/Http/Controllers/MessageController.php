@@ -12,20 +12,21 @@ use App\Models\Group;
 use App\Models\Message;
 use App\Models\MessageAttachment;
 use App\Models\User;
+use App\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class MessageController extends Controller
 {
+    private $userService;
+    public function __construct() 
+    {
+        $this->userService = new UserService();
+    }
     public function byUser(User $user)
     {
-        $message = Message::where('sender_id', auth()->id())
-        ->where('receiver_id', $user->id)
-        ->orWhere('sender_id', $user->id)
-        ->where('receiver_id', auth()->id())
-        ->latest()
-        ->paginate(10);
+        $message = $this->userService->getMessageByUser($user);
         
         return inertia('Home', [    
             'selectedConversation' => $user->toConversationArray(),
@@ -35,9 +36,7 @@ class MessageController extends Controller
 
     public function byGroup(Group $group)
     {
-        $message = Message::where('group_id', $group->id)
-        ->latest()
-        ->paginate(10);
+        $message = $this->userService->getMessageByGroup($group);
         return inertia('Home', [
             'selectedConversation' => $group->toConversationArray(),
             'messages' => MessageResource::collection($message)
@@ -47,22 +46,7 @@ class MessageController extends Controller
     public function loadOlder(Message $message)
     {
         // Load older messages that are older than the given message, sort them by the lastest
-        if($message->group_id) {
-            $messages = Message::where('created_at', '<', $message->created_at)
-            ->where('group_id', $message->group_id)
-            ->latest()
-            ->paginate(10);
-        } else {
-            $messages = Message::where('created_at', '<', $message->created_at)
-                ->where(function ($query) use ($message) {
-                    $query->where('sender_id', $message->sender_id)
-                    ->where('receiver_id', $message->receiver_id)
-                    ->orWhere('sender_id', $message->receiver_id)
-                    ->where('receiver_id', $message->sender_id);
-                })
-                ->latest()
-                ->paginate(10);
-        }
+        $messages = $this->userService->getOlderMessages($message);
 
         return MessageResource::collection($messages);
     }
@@ -137,8 +121,8 @@ class MessageController extends Controller
         }
         $message->delete();
 
+        // Target to response deleted message to client
         if ($group) {
-            // Repopulate $group with latest database data
             $group = Group::find($group->id);
             $lastMessage = $group->lastMessage;
         } else if ($conversation) {

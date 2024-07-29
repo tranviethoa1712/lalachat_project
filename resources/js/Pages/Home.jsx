@@ -72,8 +72,6 @@ function Home({ selectedConversation = null, messages = null }) {
      * React will not call your function. The function is returned to you so you can decide when and whether to call it
      */
     const loadMoreMessages = useCallback(() => {
-        ("loadMoreMessages");
-
         if (noMoreMessages) {
             return;
         }
@@ -147,13 +145,11 @@ function Home({ selectedConversation = null, messages = null }) {
 
     useEffect(() => {
         setLocalMessages(() => {
-            ("Effect 2 Home");
             return messages ? messages.data.reverse() : [];
         });
     }, [messages]);
 
     useEffect(() => {
-        "localMessages uf3", localMessages;
         // Recover scroll from bottom aftedr messages are laoded
         // offsetHeight: returns the viewable height of an element (in pixels), including padding, border and scrollbar, but not the margin
         if (messagesCtrRef.current && scrollFromBottom !== null) {

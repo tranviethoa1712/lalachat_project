@@ -102,5 +102,5 @@ class User extends Authenticatable
             'last_message' => $this->last_message,
             'last_message_date' => $this->last_message_date ? ($this->last_message_date . ' UTC') : null,
         ];
-    }
+    }   
 }

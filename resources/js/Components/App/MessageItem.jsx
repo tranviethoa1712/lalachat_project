@@ -7,41 +7,37 @@ import MessageOptionsDropdown from "./MessageOptionsDropdown";
 
 const MessageItem = ({ message, attachmentClick }) => {
     const currentUser = usePage().props.auth.user;
-    // console.log("mess item");
     return (
         <div
             className={
-                "chat " + 
+                "chat " +
                 (message.sender_id === currentUser.id
                     ? "chat-end"
-                    : "chat-start"
-                )
+                    : "chat-start")
             }
         >
             {<UserAvatar user={message.sender} />}
-            
+
             <div className="chat-header">
-                {message.sender_id !== currentUser.id 
+                {message.sender_id !== currentUser.id
                     ? message.sender.name
-                    : ""
-                }
+                    : ""}
                 <time className="text-xs opacity-50 ml-2">
                     {formatMessageDateLong(message.created_at)}
                 </time>
             </div>
             <div
                 className={
-                    "chat-bubble relative " + 
+                    "chat-bubble relative " +
                     (message.sender_id === currentUser.id
                         ? " bg-base-200 text-gray-800"
-                        : "bg-amber-900"
-                    ) 
+                        : "bg-amber-900")
                 }
             >
                 {message.sender_id == currentUser.id && (
-                    <MessageOptionsDropdown message={message}/>
+                    <MessageOptionsDropdown message={message} />
                 )}
-                 <div className="chat-message">
+                <div className="chat-message">
                     <div className="chat-message-content">
                         <Markdown>{message.message}</Markdown>
                     </div>
@@ -51,7 +47,7 @@ const MessageItem = ({ message, attachmentClick }) => {
                             attachmentClick={attachmentClick}
                         />
                     )}
-                 </div>
+                </div>
             </div>
         </div>
     );

@@ -18,7 +18,6 @@ export default function UserPicker({ value, options, onSelect }) {
         onSelect(persons);
     }
 
-
     return (
         <>
             <Combobox value={selected} onChange={onSelected} multiple >

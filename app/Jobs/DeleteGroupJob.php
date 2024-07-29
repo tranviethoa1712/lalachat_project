@@ -31,13 +31,13 @@ class DeleteGroupJob implements ShouldQueue
         $name = $this->group->name;
         $this->group->last_message_id = null;
         $this->group->save();
-        
+
         // Iterate over all messages and delete them
         $this->group->messages->each->delete();
-        
+
         // Remove all users from the group
         $this->group->users()->detach();
-        
+
         // Delete the group
         $this->group->delete();
 

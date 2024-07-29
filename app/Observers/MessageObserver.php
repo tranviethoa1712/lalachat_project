@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Storage;
 class MessageObserver
 {
     // Listen when message is deleted
-
     public function deleting(Message $message) 
     {
         // Iterate over the message's attachments and delete them from file system

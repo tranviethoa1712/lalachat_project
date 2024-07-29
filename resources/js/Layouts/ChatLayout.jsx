@@ -1,11 +1,10 @@
 import { router, usePage } from "@inertiajs/react";
 import { useEffect, useState } from "react";
-import {PencilSquareIcon} from "@heroicons/react/24/solid";
+import { PencilSquareIcon } from "@heroicons/react/24/solid";
 import TextInput from "@/Components/TextInput";
 import ConversationItem from "@/Components/App/ConversationItem";
 import { useEventBus } from "@/EventBus";
 import GroupModal from "@/Components/App/GroupModal";
-
 
 const ChatLayout = ({ children }) => {
     // usePage is a custom hook provided by Inertiajs to make the possibility of accessing server-side shared data
@@ -14,24 +13,24 @@ const ChatLayout = ({ children }) => {
     const selectedConversation = page.props.selectedConversation;
     const [localConversations, setLocalConversations] = useState([]);
     const [sortedConversations, setSortedConversations] = useState([]);
-    const {on, emit} = useEventBus();
+    const { on, emit } = useEventBus();
     const [showGroupModal, setShowGroupModal] = useState(false);
 
     const [onlineUsers, setOnlineUsers] = useState({});
-    
+
     // Check online users
     const isUserOnline = (userId) => {
-        return onlineUsers[userId]
+        return onlineUsers[userId];
     };
 
-    const onSearch  = (ev) => {
+    const onSearch = (ev) => {
         const search = ev.target.value.toLowerCase();
         setLocalConversations(
             conversations.filter((conversation) => {
                 return conversation.name.toLowerCase().includes(search);
             })
-        )
-    }
+        );
+    };
 
     // Update cached message function
     useEffect(() => {
@@ -41,8 +40,10 @@ const ChatLayout = ({ children }) => {
                 return olderUsers.map((u) => {
                     // If the message is for user
                     if (
-                        message.receiver_id && !u.is_group &&
-                        (u.id == message.sender_id || u.id == message.receiver_id)
+                        message.receiver_id &&
+                        !u.is_group &&
+                        (u.id == message.sender_id ||
+                            u.id == message.receiver_id)
                     ) {
                         u.last_message = message.message;
                         u.last_message_date = message.created_at;
@@ -50,7 +51,8 @@ const ChatLayout = ({ children }) => {
                     }
 
                     // If the message is for group
-                    if (message.group_id && 
+                    if (
+                        message.group_id &&
                         u.is_group &&
                         u.id == message.group_id
                     ) {
@@ -63,7 +65,7 @@ const ChatLayout = ({ children }) => {
             });
         };
 
-        const messageDeleted = ({prevMessage}) => {
+        const messageDeleted = ({ prevMessage }) => {
             if (!prevMessage) {
                 return;
             }
@@ -73,8 +75,10 @@ const ChatLayout = ({ children }) => {
                 return olderUsers.map((u) => {
                     // If the message is for user
                     if (
-                        prevMessage.receiver_id && !u.is_group &&
-                        (u.id == prevMessage.sender_id || u.id == prevMessage.receiver_id)
+                        prevMessage.receiver_id &&
+                        !u.is_group &&
+                        (u.id == prevMessage.sender_id ||
+                            u.id == prevMessage.receiver_id)
                     ) {
                         u.last_message = prevMessage.message;
                         u.last_message_date = prevMessage.created_at;
@@ -82,7 +86,8 @@ const ChatLayout = ({ children }) => {
                     }
 
                     // If the message is for group
-                    if (prevMessage.group_id && 
+                    if (
+                        prevMessage.group_id &&
                         u.is_group &&
                         u.id == prevMessage.group_id
                     ) {
@@ -101,19 +106,20 @@ const ChatLayout = ({ children }) => {
             setShowGroupModal(true);
         });
 
-        const offGroupDelete = on("group.deleted", ({id, name}) => {
+        const offGroupDelete = on("group.deleted", ({ id, name }) => {
             setLocalConversations((oldConversations) => {
                 return oldConversations.filter((c) => {
                     return c.id != id;
                 });
             });
 
-            emit('toast.show', `Group "${name}" was deleted!`);
+            emit("toast.show", `Group "${name}" was deleted!`);
 
-            if (!selectedConversation ||
-                selectedConversation && 
-                selectedConversation.is_group && 
-                selectedConversation.id == id
+            if (
+                !selectedConversation ||
+                (selectedConversation &&
+                    selectedConversation.is_group &&
+                    selectedConversation.id == id)
             ) {
                 router.visit(route("dashboard"));
             }
@@ -138,7 +144,7 @@ const ChatLayout = ({ children }) => {
                     return -1;
                 }
 
-                if(a.last_message_date && b.last_message_date) {
+                if (a.last_message_date && b.last_message_date) {
                     return b.last_message_date.localeCompare(
                         a.last_message_date
                     );
@@ -162,65 +168,80 @@ const ChatLayout = ({ children }) => {
     useEffect(() => {
         // controll who online or offline
         // this is broadcasting laravel, link(https://laravel.com/docs/11.x/broadcasting#:~:text=Pusher%20Channels-,Laravel%20Echo%20is%20a%20JavaScript%20library%20that%20makes%20it%20painless,subscriptions%2C%20channels%2C%20and%20messages.)
-        Echo.join('online')
+        Echo.join("online")
             // whenever the user connect to chanel, the user is going to get all the other connected users right here
             .here((users) => {
                 // Object.fromEntries() transforms a list of key-value pairs into an object.
-                const onlineUsersObj = Object.fromEntries(users.map((user) => [user.id, user]));
+                const onlineUsersObj = Object.fromEntries(
+                    users.map((user) => [user.id, user])
+                );
 
                 setOnlineUsers((prevOnlineUsers) => {
-                    return { ...prevOnlineUsers, ...onlineUsersObj }
+                    return { ...prevOnlineUsers, ...onlineUsersObj };
                 });
             })
             // whenever somebody connects to the chanel That user come right here
             .joining((user) => {
                 setOnlineUsers((prevOnlineUsers) => {
                     const updatedUSers = { ...prevOnlineUsers };
-                    updatedUSers[user.id] = user; 
+                    updatedUSers[user.id] = user;
                     return updatedUSers;
-                })
+                });
             })
             // whenever somebody leaves that channel The user will get info right here
             .leaving((user) => {
                 const updatedUSers = { ...prevOnlineUsers };
-                    updatedUSers[user.id] = user; 
-                    return updatedUSers;
-            }).error((error) => {
-                console.log("error", error);
+                updatedUSers[user.id] = user;
+                return updatedUSers;
+            })
+            .error((error) => {
+                "error", error;
             });
 
-            return () => {
-                Echo.leave("online"); // user logout event
-            };
+        return () => {
+            Echo.leave("online"); // user logout event
+        };
     }, []);
 
     return (
         <>
-            <div className="flex-1 w-full flex overflow-hidden" data-theme="valentine">
-                <div className={`transition-all w-full sm:w-[220px] md:w-[300px   
+            <div
+                className="flex-1 w-full flex overflow-hidden"
+                data-theme="valentine"
+            >
+                <div
+                    className={`transition-all w-full sm:w-[220px] md:w-[300px   
                 flex flex-col overflow-hidden ${
                     selectedConversation ? "-ml-[100%] sm:ml-0" : ""
-                }`}>
+                }`}
+                >
                     <div className="flex items-center justify-between py-2 px-3 text-xl font-medium">
                         <div className="">My Conversations</div>
-                        <div className="tooltip tooltip-left" data-tip="Create new Group">
-                            <button className="text-gray-400 hover:text-gray-200" onClick={() => setShowGroupModal(true)}>
+                        <div
+                            className="tooltip tooltip-left"
+                            data-tip="Create new Group"
+                        >
+                            <button
+                                className="text-gray-400 hover:text-gray-200"
+                                onClick={() => setShowGroupModal(true)}
+                            >
                                 <PencilSquareIcon className="w-4 h-4 inline-block ml-2" />
                             </button>
                         </div>
                     </div>
                     <div className="p-3">
-                        <TextInput 
+                        <TextInput
                             onKeyUp={onSearch}
                             placeholder="Filter users and groups"
                             className="w-full"
                         />
                     </div>
                     <div className="flex-1 overflow-auto">
-                        {sortedConversations && 
+                        {sortedConversations &&
                             sortedConversations.map((conversation) => (
                                 <ConversationItem
-                                    key={`${conversation.is_group
+                                    key={`${
+                                        conversation.is_group
                                             ? "group_"
                                             : "user_"
                                     }${conversation.id}`}
@@ -235,7 +256,10 @@ const ChatLayout = ({ children }) => {
                     {children}
                 </div>
             </div>
-            <GroupModal show={showGroupModal} onClose={() => setShowGroupModal(false)} />
+            <GroupModal
+                show={showGroupModal}
+                onClose={() => setShowGroupModal(false)}
+            />
         </>
     );
 };

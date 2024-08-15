@@ -20,11 +20,9 @@ class SocketMessage implements ShouldBroadcastNow
     /**
      * Create a new event instance.
      */
-    public function __construct(public Message $message)
-    {
-            
-    }
+    public function __construct(public Message $message) {}
 
+    // Push message to listened client
     public function broadcastWith(): array
     {
         return [
@@ -42,11 +40,11 @@ class SocketMessage implements ShouldBroadcastNow
         $m = $this->message;
         $channels = [];
 
-        if($m->group_id) {
+        if ($m->group_id) {
             $channels[] = new PrivateChannel('message.group.' . $m->group_id);
         } else {
             $channels[] =
-            new PrivateChannel('message.user.' . collect([$m->sender_id, $m->receiver_id])->sort()->implode('-'));
+                new PrivateChannel('message.user.' . collect([$m->sender_id, $m->receiver_id])->sort()->implode('-'));
         }
 
         return $channels;

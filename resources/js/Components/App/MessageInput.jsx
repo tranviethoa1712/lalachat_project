@@ -132,7 +132,7 @@ const MessageInput = (conversation = null) => {
         );
     };
 
-    const onEmojiClickSetNewMessage = () => {
+    const onEmojiClickSetNewMessage = (ev) => {
         setNewMessage(() => {
             return newMessage + ev.emoji;
         });

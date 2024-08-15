@@ -10,12 +10,9 @@ use App\Http\Resources\UserResource;
 use App\Models\Conversation;
 use App\Models\Group;
 use App\Models\Message;
-use App\Models\MessageAttachment;
 use App\Models\User;
 use App\Services\UserService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
+
 
 class MessageController extends Controller
 {
@@ -57,44 +54,7 @@ class MessageController extends Controller
     public function store(StoreMessageRequest $request)
     {
         $data = $request->validated();
-        $data['sender_id'] = auth()->id();
-        $receiverId = $data['receiver_id'] ?? null;
-        $groupId = $data['group_id'] ?? null;
-
-        $files = $data['attachments'] ?? [];
-
-        $message = Message::create($data);
-        $attachments = [];        
-        if($files) {
-            foreach ($files as $file) {
-                $directory = 'attachments/' . Str::random(32);
-                Storage::makeDirectory($directory);
-
-                $model = [
-                    'message_id' => $message->id,
-                    'name' => $file->getClientOriginalName(),
-                    'mime' => $file->getClientMimeType(),
-                    'size' => $file->getSize(),
-                    'path' => $file->store($directory, 'public'),
-                ];
-                $attachment = MessageAttachment::create($model);
-                $attachments[] = $attachment;
-            }
-
-            $message->attachments = $attachments;
-        }
-        
-        // Update last message id in conversation of two user if receiver id exists
-        if ($receiverId) {
-            Conversation::updateConversationWithMessage($receiverId, auth()->id(), $message);
-        }
-        // Update last message id in Group if group id exists
-        if ($groupId) {
-            Group::updateGroupWithMessage($groupId, $message);
-        }
-
-        // Reverb Laravel push the infomation to browser and tell that the message was received
-        SocketMessage::dispatch($message);
+        $message = $this->userService->storeMessageProcess($data);
 
         return new MessageResource($message);
     }
@@ -105,30 +65,7 @@ class MessageController extends Controller
      */
     public function destroy(Message $message)
     {
-        $group = null;
-        $conversation = null;
-        $lastMessage = null;
-        // Check if the user is the owner of the message
-        if($message->sender_id !== auth()->id()) {
-            return response()->json(['message' => 'Forbidden'], 403);
-        }
-
-        // Check if the message is the group message
-        if ($message->group_id) {
-            $group = Group::where('last_message_id', $message->id)->first();
-        } else {
-            $conversation = Conversation::where('last_message_id', $message->id)->first();
-        }
-        $message->delete();
-
-        // Target to response deleted message to client
-        if ($group) {
-            $group = Group::find($group->id);
-            $lastMessage = $group->lastMessage;
-        } else if ($conversation) {
-            $conversation = Conversation::find($conversation->id);
-            $lastMessage = $conversation->lastMessage;
-        }
+        $lastMessage = $this->userService->destroyMessageProcess($message);
 
         return response()->json(['message' => $lastMessage ? new MessageResource($lastMessage) : null]);
     }

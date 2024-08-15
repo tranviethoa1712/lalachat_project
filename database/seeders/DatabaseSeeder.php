@@ -31,7 +31,7 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('password'),
         ]);
 
-        User::factory(10)->create();
+        User::factory(20)->create();
 
         // Group
         for ($i = 0; $i < 5; $i++) {
@@ -44,7 +44,7 @@ class DatabaseSeeder extends Seeder
         }
 
         // Messages
-        Message::factory(1000)->create();
+        Message::factory(100000)->create();
         $messages = Message::whereNull('group_id')->orderBy('created_at')->get();
 
         // Conversations 

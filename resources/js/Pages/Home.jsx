@@ -82,11 +82,8 @@ function Home({ selectedConversation = null, messages = null }) {
             .get(route("message.loadOlder", firstMessage.id))
             .then(({ data }) => {
                 if (data.data.length === 0) {
-                    if (isInitialRender) {
-                        setIsInitialRender(false);
-                        setNoMoreMessages(true);
-                        return;
-                    }
+                    setNoMoreMessages(true);
+                    return;
                 }
 
                 /**
@@ -103,15 +100,12 @@ function Home({ selectedConversation = null, messages = null }) {
                     scrollHeight - scrollTop - clientHeight;
                 setScrollFromBottom(tmpScrollFromBottom); // ex:900px - 0px - 300px = 600px
 
-                if (isInitialRender) {
-                    setIsInitialRender(false);
-                    setLocalMessages((prevMessages) => [
-                        ...data.data.reverse(),
-                        ...prevMessages,
-                    ]);
-                }
+                setLocalMessages((prevMessages) => [
+                    ...data.data.reverse(),
+                    ...prevMessages,
+                ]);
             });
-    }, [localMessages, isInitialRender, noMoreMessages]);
+    }, [localMessages, noMoreMessages]);
 
     const onAttachmentClick = (attachments, index) => {
         setPreviewAttachment({

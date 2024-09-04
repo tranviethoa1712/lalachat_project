@@ -7,13 +7,12 @@ use App\Models\Conversation;
 use App\Models\Group;
 use App\Models\Message;
 use App\Models\MessageAttachment;
-use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class UserService
 {
-    public $currentUserId;
+    private $currentUserId;
     public function __construct()
     {
         $this->currentUserId = auth()->id();

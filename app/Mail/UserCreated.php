@@ -39,10 +39,6 @@ class UserCreated extends Mailable
     {
         return new Content(
             markdown: 'mail.user.created',
-            // with: [
-            //     'user' => $this->user,
-            //     'password' => $this->password
-            // ]
         );
     }
 

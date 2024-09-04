@@ -131,7 +131,11 @@ function Home({ selectedConversation = null, messages = null }) {
         setNoMoreMessages(false);
 
         return () => {
-            // React cleans up effects from the previous render before running the effects next time
+            /**
+             * When selectedConversation changes, useEffect will run again. If you don't unsubscribe from the old event before subscribing to the new event,
+             * you may encounter a situation where the old callback is still active, leading to repeated processing or unexpected errors.
+             * Ensures that events are processed only once with the latest data.
+             */
             offCreated();
             offDeleted();
         };

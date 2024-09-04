@@ -3,7 +3,7 @@
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Support\Facades\Broadcast;
-
+// Day la noi nguoi dung co the duoc uy quuen de listen chanel hay khong
 Broadcast::channel('online', function ($user) {
     return $user ? new UserResource($user) : null;
 });
